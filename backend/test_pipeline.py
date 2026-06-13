@@ -1,18 +1,20 @@
-"""
-Quick test — runs the full Notion ingestion pipeline.
-Run with: python test_pipeline.py
-Uses a hardcoded test company_id — replace with your own.
-"""
-import os
 from dotenv import load_dotenv
 load_dotenv()
 
-from app.ingestion.pipeline import IngestionPipeline
+from app.retrieval.retriever import HybridRetriever
 
-pipeline = IngestionPipeline()
-summary = pipeline.run_notion(company_id="test-company-001")
+retriever = HybridRetriever()
+results = retriever.retrieve(
+    query="test page",
+    company_id="test_company_1"
+)
 
-print("\n✅ Ingestion complete!")
-print(f"   Pages fetched:   {summary['pages_fetched']}")
-print(f"   Chunks created:  {summary['chunks_created']}")
-print(f"   Chunks stored:   {summary['chunks_stored']}")
+print(f"Retrieved {len(results)} chunks\n")
+for r in results:
+    source = r["source"]
+    title = r["title"]
+    score = r["combined_score"]
+    content = r["content"][:100]
+    print(f"  [{source}] {title} | score: {score:.3f}")
+    print(f"  {content}...")
+    print()
