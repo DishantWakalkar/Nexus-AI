@@ -1,7 +1,8 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
+from fastapi import FastAPI  
+from fastapi.middleware.cors import CORSMiddleware  
+from dotenv import load_dotenv  
 from app.middleware.auth_middleware import SecurityMiddleware
+from app.api.ingest import router as ingest_router
 
 load_dotenv()
 
@@ -14,6 +15,7 @@ app = FastAPI(
     redoc_url=None,
 )
 
+app.include_router(ingest_router)    
 app.add_middleware(SecurityMiddleware)
 app.add_middleware(
     CORSMiddleware,
