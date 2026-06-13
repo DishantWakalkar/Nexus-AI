@@ -55,6 +55,7 @@ class VectorStore:
             "company_id": r["company_id"],
             "source": r["source"],
             "doc_id": r["doc_id"],
+            "title": r.get("title", "Untitled"),
             "content": r["content"],
             "embedding": r["embedding"],
             "chunk_index": r["chunk_index"],
