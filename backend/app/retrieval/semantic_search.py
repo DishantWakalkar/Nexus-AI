@@ -1,5 +1,11 @@
 import os
 import logging
+from dotenv import load_dotenv
+load_dotenv()
+hf_token = os.environ.get("HF_TOKEN")
+if hf_token:
+    os.environ["HUGGINGFACE_HUB_TOKEN"] = hf_token
+    
 from sentence_transformers import SentenceTransformer
 from supabase import create_client, Client
 

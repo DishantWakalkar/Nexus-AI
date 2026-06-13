@@ -1,11 +1,18 @@
+import os
+from dotenv import load_dotenv
+
+# Load env and set HF token BEFORE importing sentence_transformers
+load_dotenv()
+hf_token = os.environ.get("HF_TOKEN")
+if hf_token:
+    os.environ["HUGGINGFACE_HUB_TOKEN"] = hf_token
+
 import logging
 from sentence_transformers import SentenceTransformer
 from app.ingestion.chunker import Chunk
 
 logger = logging.getLogger("nexusai.ingestion.embedder")
 
-# all-MiniLM-L6-v2 — fast, 384 dimensions, great for semantic search
-# Downloads once (~90MB), cached locally after first run
 MODEL_NAME = "all-MiniLM-L6-v2"
 
 
@@ -16,10 +23,6 @@ class Embedder:
         logger.info("Embedding model loaded")
 
     def embed_chunks(self, chunks: list[Chunk]) -> list[dict]:
-        """
-        Embed a list of chunks and return dicts ready for Supabase insertion.
-        Batches embeddings for efficiency.
-        """
         if not chunks:
             return []
 
@@ -30,7 +33,7 @@ class Embedder:
             texts,
             batch_size=32,
             show_progress_bar=False,
-            normalize_embeddings=True  # Normalise for cosine similarity
+            normalize_embeddings=True
         )
         logger.info("Embedding complete")
 
