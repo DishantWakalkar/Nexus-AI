@@ -1,21 +1,23 @@
-from fastapi import FastAPI  
-from fastapi.middleware.cors import CORSMiddleware  
-from dotenv import load_dotenv  
-from app.middleware.auth_middleware import SecurityMiddleware
-from app.api.ingest import router as ingest_router
+import os
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 
 load_dotenv()
 
+from app.middleware.auth_middleware import SecurityMiddleware
+from app.api.ask import router as ask_router
+from app.api.auth import router as auth_router
+from app.api.ingest import router as ingest_router
+
 app = FastAPI(
     title="NexusAI",
-    description="Company Knowledge Agent — RAG + Agentic AI over Notion, Drive, Slack, Gmail",
+    description="Company Knowledge Agent - RAG + Agentic AI over Notion, Drive, Slack, Gmail",
     version="0.1.0",
-    # Disable docs in production
-    docs_url="/docs" if __import__("os").getenv("APP_ENV") == "development" else None,
+    docs_url="/docs" if os.getenv("APP_ENV") == "development" else None,
     redoc_url=None,
 )
 
-app.include_router(ingest_router)    
 app.add_middleware(SecurityMiddleware)
 app.add_middleware(
     CORSMiddleware,
@@ -27,6 +29,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(ask_router)
+app.include_router(auth_router)
+app.include_router(ingest_router)
+
 
 @app.get("/api/health")
 async def health():

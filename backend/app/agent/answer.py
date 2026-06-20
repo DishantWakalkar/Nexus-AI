@@ -13,9 +13,9 @@ class AnswerEngine:
     a cited answer using Groq (Llama 3.3 70B).
 
     Rules enforced:
-    - Answer ONLY from provided chunks — no outside knowledge
+    - Answer ONLY from provided chunks - no outside knowledge
     - Every claim must cite a source
-    - If answer not found — say so honestly, never hallucinate
+    - If answer not found - say so honestly, never hallucinate
     - Permission-filtered chunks only
     """
 
@@ -35,12 +35,12 @@ class AnswerEngine:
         source_filter: str | None = None,
     ) -> dict:
         """
-        Main method — retrieves relevant chunks then generates
+        Main method - retrieves relevant chunks then generates
         a cited answer. Returns answer + sources used.
         """
         logger.info(f"Question received: '{query[:80]}' company={company_id}")
 
-        # Step 1 — retrieve relevant chunks
+        # Step 1 - retrieve relevant chunks
         chunks = self.retriever.retrieve(
             query=query,
             company_id=company_id,
@@ -54,7 +54,7 @@ class AnswerEngine:
                 "chunks_used": 0,
             }
 
-        # Step 2 — filter by user permissions
+        # Step 2 - filter by user permissions
         chunks = filter_chunks_by_permission(chunks, user_id, company_id)
 
         if not chunks:
@@ -64,13 +64,13 @@ class AnswerEngine:
                 "chunks_used": 0,
             }
 
-        # Step 3 — build context block for the LLM
+        # Step 3 - build context block for the LLM
         context = self._build_context(chunks)
 
-        # Step 4 — generate answer
+        # Step 4 - generate answer
         answer_text = self._generate_answer(query, context)
 
-        # Step 5 — build sources list for the UI
+        # Step 5 - build sources list for the UI
         sources = self._extract_sources(chunks)
 
         return {
@@ -111,16 +111,16 @@ class AnswerEngine:
 Your job is to answer questions using ONLY the document chunks provided to you.
 
 STRICT RULES:
-1. Answer ONLY from the provided sources — never use outside knowledge
+1. Answer ONLY from the provided sources - never use outside knowledge
 2. Cite every claim using [SOURCE N] notation inline
 3. If the answer is not in the sources say exactly: "I could not find this information in your documents."
-4. Never guess, infer, or hallucinate — only state what the sources explicitly say
-5. Be concise and direct — no filler phrases like "Great question!"
+4. Never guess, infer, or hallucinate - only state what the sources explicitly say
+5. Be concise and direct - no filler phrases like "Great question!"
 6. If multiple sources support a point cite all of them: [SOURCE 1][SOURCE 3]
 
 FORMAT:
-- Answer in clear paragraphs with inline citations
-- End with a ## Sources section listing: Source N — Title (from: notion/drive/slack)"""
+- Answer in clear paragraphs with inline citations only
+- Do NOT add a Sources section at the end - the application displays sources separately"""
 
         user_message = f"""Here are the relevant document chunks:
 
