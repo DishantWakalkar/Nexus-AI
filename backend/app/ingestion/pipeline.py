@@ -4,6 +4,7 @@ from app.connectors.slack import SlackConnector
 from app.ingestion.chunker import RecursiveChunker
 from app.ingestion.embedder import Embedder
 from app.ingestion.vector_store import VectorStore
+from app.connectors.google_drive import GoogleDriveConnector
 
 logger = logging.getLogger("nexusai.ingestion.pipeline")
 
@@ -74,4 +75,31 @@ class IngestionPipeline:
             "company_id": company_id,
         }
         logger.info(f"Slack ingestion complete: {summary}")
+        return summary
+    def run_google_drive(self, company_id: str) -> dict:
+        """
+        Full pipeline: fetch Google Docs → chunk → embed → store.
+        """
+        logger.info(f"Starting Google Drive ingestion for company: {company_id}")
+
+        connector = GoogleDriveConnector()
+        docs = connector.fetch_all_documents(company_id=company_id)
+        logger.info(f"Fetched {len(docs)} documents")
+
+        all_chunks = []
+        for doc in docs:
+            chunks = self.chunker.chunk_document(doc)
+            all_chunks.extend(chunks)
+        logger.info(f"Created {len(all_chunks)} chunks from {len(docs)} documents")
+
+        records = self.embedder.embed_chunks(all_chunks)
+        inserted = self.vector_store.upsert_chunks(records, company_id)
+
+        summary = {
+            "docs_fetched": len(docs),
+            "chunks_created": len(all_chunks),
+            "chunks_stored": inserted,
+            "company_id": company_id,
+        }
+        logger.info(f"Google Drive ingestion complete: {summary}")
         return summary

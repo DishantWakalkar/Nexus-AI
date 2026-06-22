@@ -33,3 +33,16 @@ async def ingest_slack(current_user: TokenPayload = CurrentUser):
     except Exception as e:
         logger.error(f"Slack ingestion failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/google-drive")
+async def ingest_google_drive(current_user: TokenPayload = CurrentUser):
+    """
+    Trigger Google Drive ingestion for the authenticated user's company.
+    """
+    try:
+        pipeline = IngestionPipeline()
+        summary = pipeline.run_google_drive(company_id=current_user.company_id)
+        return {"success": True, "summary": summary}
+    except Exception as e:
+        logger.error(f"Google Drive ingestion failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
