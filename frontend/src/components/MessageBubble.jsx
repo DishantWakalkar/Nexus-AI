@@ -1,12 +1,10 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
-import { Sparkles, Copy, Check, RefreshCw } from 'lucide-react';
+import { Copy, Check, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import SourceCard from './SourceCard';
 
-// Replaces [SOURCE N] with a uniquely-classnamed span so rehype-raw can pass it
-// through and our custom span component can intercept it.
 function embedCitations(text) {
   return (text ?? '').replace(/\[SOURCE (\d+)\]/g, '<span class="__cite__$1"></span>');
 }
@@ -24,12 +22,8 @@ export default function MessageBubble({ message, onRetry }) {
     const el = sourceRefs.current[num];
     if (!el) return;
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    el.style.outline = '1px solid #5b6cff';
-    el.style.outlineOffset = '2px';
-    setTimeout(() => {
-      el.style.outline = '';
-      el.style.outlineOffset = '';
-    }, 1500);
+    el.style.outline = '2px solid #1C8C5B';
+    setTimeout(() => { el.style.outline = ''; }, 1500);
   }, []);
 
   const copy = () => {
@@ -38,201 +32,153 @@ export default function MessageBubble({ message, onRetry }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Memoized component map - only rebuilds if scrollToSource identity changes (never)
-  const mdComponents = useMemo(
-    () => ({
-      // Citation badge injected via rehype-raw
-      span({ className, children, ...props }) {
-        const cls = typeof className === 'string' ? className : '';
-        if (cls.startsWith('__cite__')) {
-          const num = parseInt(cls.replace('__cite__', ''), 10);
-          if (!isNaN(num)) {
-            return (
-              <button
-                onClick={() => scrollToSource(num)}
-                title={`Jump to source ${num}`}
-                className="inline-flex items-center justify-center w-[18px] h-[18px] text-[10px] font-bold rounded-full bg-accent text-white mx-0.5 hover:bg-[#4a5ae8] transition-colors cursor-pointer flex-shrink-0"
-                style={{ verticalAlign: 'super', lineHeight: 1 }}
-              >
-                {num}
-              </button>
-            );
-          }
-        }
-        return <span className={className} {...props}>{children}</span>;
-      },
-      p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
-      ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-0.5 pl-1">{children}</ul>,
-      ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-0.5 pl-1">{children}</ol>,
-      li: ({ children }) => <li className="leading-relaxed">{children}</li>,
-      code({ inline, children, ...rest }) {
-        if (inline) {
+  const mdComponents = useMemo(() => ({
+    span({ className, children, ...props }) {
+      const cls = typeof className === 'string' ? className : '';
+      if (cls.startsWith('__cite__')) {
+        const num = parseInt(cls.replace('__cite__', ''), 10);
+        if (!isNaN(num)) {
           return (
-            <code
-              className="bg-rim px-1.5 py-0.5 rounded text-[12px] font-mono text-[#c9d1e0]"
-              {...rest}
+            <sup
+              onClick={() => scrollToSource(num)}
+              title={`Source ${num}`}
+              className="font-mono text-[10px] font-semibold text-forest px-px cursor-pointer hover:underline"
             >
-              {children}
-            </code>
+              {num}
+            </sup>
           );
         }
-        return (
-          <pre className="bg-rim rounded-lg p-3 my-2 overflow-x-auto">
-            <code className="text-xs font-mono text-zinc-300 leading-5">{children}</code>
-          </pre>
-        );
-      },
-      strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
-      em: ({ children }) => <em className="italic text-zinc-300">{children}</em>,
-      h1: ({ children }) => <h1 className="text-base font-semibold mb-2 mt-3 first:mt-0 text-white">{children}</h1>,
-      h2: ({ children }) => <h2 className="text-sm font-semibold mb-1.5 mt-3 first:mt-0 text-white">{children}</h2>,
-      h3: ({ children }) => <h3 className="text-sm font-medium mb-1 mt-2 first:mt-0 text-zinc-200">{children}</h3>,
-      a: ({ href, children }) => (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-accent underline underline-offset-2 hover:text-[#7b8bff] transition-colors"
-        >
-          {children}
-        </a>
-      ),
-      blockquote: ({ children }) => (
-        <blockquote className="border-l-2 border-accent/30 pl-3 my-2 text-zinc-400 italic">
-          {children}
-        </blockquote>
-      ),
-      hr: () => <hr className="border-rim my-3" />,
-      table: ({ children }) => (
-        <div className="overflow-x-auto my-2 rounded-lg border border-rim">
-          <table className="text-xs border-collapse w-full">{children}</table>
-        </div>
-      ),
-      thead: ({ children }) => <thead className="bg-lift">{children}</thead>,
-      th: ({ children }) => (
-        <th className="border-b border-rim px-3 py-1.5 text-left font-medium text-zinc-300">
-          {children}
-        </th>
-      ),
-      td: ({ children }) => (
-        <td className="border-b border-rim px-3 py-1.5 text-zinc-400 last:border-b-0">
-          {children}
-        </td>
-      ),
-    }),
-    [scrollToSource]
-  );
+      }
+      return <span className={className} {...props}>{children}</span>;
+    },
+    p: ({ children }) => <p className="mb-3 last:mb-0 leading-[1.68] text-[#2E3A34]">{children}</p>,
+    ul: ({ children }) => <ul className="list-disc list-inside mb-3 space-y-1 pl-1 text-[#2E3A34]">{children}</ul>,
+    ol: ({ children }) => <ol className="list-decimal list-inside mb-3 space-y-1 pl-1 text-[#2E3A34]">{children}</ol>,
+    li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+    code({ inline, children, ...rest }) {
+      if (inline) return <code className="bg-step border border-border px-1.5 py-0.5 rounded text-[12px] font-mono text-ink" {...rest}>{children}</code>;
+      return (
+        <pre className="bg-step border border-border rounded p-3 my-2 overflow-x-auto">
+          <code className="text-xs font-mono text-ink leading-5">{children}</code>
+        </pre>
+      );
+    },
+    strong: ({ children }) => <strong className="font-semibold text-ink">{children}</strong>,
+    h2: ({ children }) => <h2 className="font-serif text-[18px] font-normal text-ink mb-2 mt-4 first:mt-0">{children}</h2>,
+    h3: ({ children }) => <h3 className="text-sm font-semibold text-ink mb-1 mt-3 first:mt-0">{children}</h3>,
+    a: ({ href, children }) => (
+      <a href={href} target="_blank" rel="noopener noreferrer"
+        className="text-forest underline underline-offset-2 hover:text-forest-dark transition-colors">
+        {children}
+      </a>
+    ),
+    blockquote: ({ children }) => (
+      <blockquote className="border-l-2 border-forest/30 pl-3 my-2 text-sage italic">{children}</blockquote>
+    ),
+    hr: () => <hr className="border-border my-3" />,
+  }), [scrollToSource]);
 
-  // ── USER bubble ──────────────────────────────────────────────────────────────
+  // USER message
   if (message.role === 'user') {
     return (
-      <div className="flex justify-end group">
-        <div className="flex flex-col items-end gap-1 max-w-[72%]">
-          <div className="bg-accent/[.13] border border-accent/[.22] rounded-[18px] rounded-tr-[4px] px-4 py-2.5 text-sm text-[#e8eaf0] leading-relaxed">
-            {message.content}
-          </div>
-          {message.timestamp && (
-            <span className="text-[11px] text-zinc-700 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              {formatTime(message.timestamp)}
-            </span>
-          )}
+      <div className="group">
+        <div className="font-mono text-[10px] tracking-[.2em] text-forest mb-[11px] uppercase">Question</div>
+        <div className="font-serif text-[27px] leading-[1.2] tracking-[-0.01em] text-ink">
+          {message.content}
         </div>
+        {message.timestamp && (
+          <span className="text-[11px] text-muted mt-2 block opacity-0 group-hover:opacity-100 transition-opacity">
+            {formatTime(message.timestamp)}
+          </span>
+        )}
       </div>
     );
   }
 
-  // ── AI bubble ────────────────────────────────────────────────────────────────
-  const bubbleClass = message.isError
-    ? 'bg-red-500/10 border-red-500/20'
-    : message.needs_clarification
-    ? 'bg-amber-500/10 border-amber-500/20'
-    : 'bg-panel border-rim';
+  // AI message
+  const isError = message.isError;
+  const isClarify = message.needs_clarification;
 
   return (
-    <div className="flex items-start gap-3 group">
-      {/* Avatar */}
-      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{background:'rgba(91,108,255,.15)',border:'1px solid rgba(91,108,255,.2)'}}>
-        <Sparkles size={13} className="text-accent" />
-      </div>
+    <div className="group mt-4">
+      {isClarify && (
+        <div className="font-mono text-[10px] tracking-[.16em] text-amber-600 mb-3 uppercase">Needs clarification</div>
+      )}
 
-      <div className="flex-1 min-w-0 space-y-2">
-        {/* Bubble */}
-        <div className={`relative border rounded-[18px] rounded-tl-[4px] px-4 py-3.5 text-sm text-[#e8eaf0] ${bubbleClass}`}>
-          {/* Clarification label */}
-          {message.needs_clarification && (
-            <div className="flex items-center gap-1.5 text-amber-400 text-xs font-medium mb-2.5">
-              <span>⚡</span>
-              <span>Needs clarification</span>
-            </div>
-          )}
+      <div className={`relative ${isError ? 'border-l-2 border-red-400 pl-4' : ''}`}>
+        {/* Copy button */}
+        {!isError && (
+          <button
+            onClick={copy}
+            title={copied ? 'Copied!' : 'Copy'}
+            className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded text-muted hover:text-ink hover:bg-step"
+          >
+            {copied ? <Check size={12} className="text-forest" /> : <Copy size={12} />}
+          </button>
+        )}
 
-          {/* Hover actions - copy */}
-          {!message.isError && (
-            <div className="absolute top-2.5 right-3 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={copy}
-                title={copied ? 'Copied!' : 'Copy response'}
-                className="p-1.5 rounded-md text-zinc-600 hover:text-zinc-300 hover:bg-rim transition-colors"
-              >
-                {copied
-                  ? <Check size={12} className="text-green-400" />
-                  : <Copy size={12} />}
-              </button>
-            </div>
-          )}
+        {/* Lead sentence in Newsreader */}
+        <div className="font-serif text-[20px] leading-[1.45] text-ink mb-4 pr-8">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={{
+              ...mdComponents,
+              p: ({ children }) => <>{children}</>,
+            }}
+          >
+            {embedCitations(message.content.split('\n')[0])}
+          </ReactMarkdown>
+        </div>
 
-          {/* Markdown content */}
-          <div className={!message.isError ? 'pr-8' : ''}>
+        {/* Rest of content */}
+        {message.content.split('\n').slice(1).join('\n').trim() && (
+          <div className="text-[15px] pr-8">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw]}
               components={mdComponents}
             >
-              {embedCitations(message.content)}
+              {embedCitations(message.content.split('\n').slice(1).join('\n').trim())}
             </ReactMarkdown>
-          </div>
-
-          {/* Retry on error */}
-          {message.isError && onRetry && (
-            <button
-              onClick={onRetry}
-              className="mt-2.5 flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-            >
-              <RefreshCw size={11} />
-              Try again
-            </button>
-          )}
-        </div>
-
-        {/* Source cards */}
-        {message.sources?.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 pl-1">
-            {message.sources.map((source) => (
-              <SourceCard
-                key={source.source_number}
-                source={source}
-                ref={(el) => {
-                  if (el) sourceRefs.current[source.source_number] = el;
-                }}
-              />
-            ))}
           </div>
         )}
 
-        {/* Meta row - timestamp + chunks, revealed on hover */}
-        {(message.timestamp || message.chunks_used > 0) && (
-          <div className="flex items-center gap-3 pl-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {message.timestamp && (
-              <span className="text-[11px] text-zinc-700">{formatTime(message.timestamp)}</span>
-            )}
+        {/* Retry */}
+        {isError && onRetry && (
+          <button onClick={onRetry}
+            className="mt-3 flex items-center gap-1.5 text-xs text-muted hover:text-ink transition-colors">
+            <RefreshCw size={11} /> Try again
+          </button>
+        )}
+      </div>
+
+      {/* Sources */}
+      {message.sources?.length > 0 && (
+        <div className="mt-5 border-t border-border pt-3">
+          <div className="flex justify-between items-baseline mb-2">
+            <span className="font-mono text-[10px] tracking-[.2em] text-dim uppercase">Sources</span>
             {message.chunks_used > 0 && (
-              <span className="text-[11px] text-zinc-700">
-                {message.chunks_used} chunk{message.chunks_used !== 1 ? 's' : ''} searched
+              <span className="font-mono text-[10px] tracking-[.08em] text-muted uppercase">
+                {message.chunks_used} passages read
               </span>
             )}
           </div>
-        )}
-      </div>
+          {message.sources.map((source) => (
+            <SourceCard
+              key={source.source_number}
+              source={source}
+              ref={(el) => { if (el) sourceRefs.current[source.source_number] = el; }}
+            />
+          ))}
+        </div>
+      )}
+
+      {message.timestamp && (
+        <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="text-[11px] text-muted">{formatTime(message.timestamp)}</span>
+        </div>
+      )}
     </div>
   );
 }

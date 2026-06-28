@@ -1,0 +1,47 @@
+services:
+  - type: web
+    name: nexusai-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: HF_HUB_TIMEOUT
+        value: "120"
+      # Set these in the Render dashboard - never commit real values
+      - key: SECRET_KEY
+        sync: false
+      - key: ENCRYPTION_SALT
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: NOTION_CLIENT_ID
+        sync: false
+      - key: NOTION_CLIENT_SECRET
+        sync: false
+      - key: SLACK_CLIENT_ID
+        sync: false
+      - key: SLACK_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      # FRONTEND_URL  →  your Vercel URL  e.g. https://nexusai.vercel.app
+      - key: FRONTEND_URL
+        sync: false
+      # API_BASE_URL  →  your Render URL  e.g. https://nexusai-api.onrender.com
+      - key: API_BASE_URL
+        sync: false

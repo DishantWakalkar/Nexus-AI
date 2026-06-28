@@ -143,7 +143,14 @@ async def notion_start(token: str = Query(...)):
 
 
 @router.get("/notion/callback")
-async def notion_callback(code: str = Query(...), state: str = Query(...)):
+async def notion_callback(
+    code: Optional[str] = Query(None),
+    state: Optional[str] = Query(None),
+    error: Optional[str] = Query(None),
+):
+    if error or not code or not state:
+        logger.info("Notion OAuth denied or cancelled: error=%s", error)
+        return RedirectResponse(f"{_frontend_url()}/connections?notion=cancelled")
     state_data = _decode_oauth_state(state)
     company_id = state_data["company_id"]
     user_id = state_data["user_id"]
@@ -213,7 +220,14 @@ async def slack_start(token: str = Query(...)):
 
 
 @router.get("/slack/callback")
-async def slack_callback(code: str = Query(...), state: str = Query(...)):
+async def slack_callback(
+    code: Optional[str] = Query(None),
+    state: Optional[str] = Query(None),
+    error: Optional[str] = Query(None),
+):
+    if error or not code or not state:
+        logger.info("Slack OAuth denied or cancelled: error=%s", error)
+        return RedirectResponse(f"{_frontend_url()}/connections?slack=cancelled")
     state_data = _decode_oauth_state(state)
     company_id = state_data["company_id"]
     user_id = state_data["user_id"]
@@ -282,7 +296,14 @@ async def google_drive_start(
 
 
 @router.get("/google-drive/callback")
-async def google_drive_callback(code: str = Query(...), state: str = Query(...)):
+async def google_drive_callback(
+    code: Optional[str] = Query(None),
+    state: Optional[str] = Query(None),
+    error: Optional[str] = Query(None),
+):
+    if error or not code or not state:
+        logger.info("Google Drive OAuth denied or cancelled: error=%s", error)
+        return RedirectResponse(f"{_frontend_url()}/connections?google_drive=cancelled")
     state_data = _decode_oauth_state(state)
     company_id = state_data["company_id"]
     user_id = state_data["user_id"]

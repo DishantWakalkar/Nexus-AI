@@ -6,7 +6,12 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('access_token');
-  return token ? children : <Navigate to="/login" replace />;
+  return token ? children : <Navigate to="/" replace />;
+}
+
+function PublicRoute({ children }) {
+  const token = localStorage.getItem('access_token');
+  return token ? <Navigate to="/chat" replace /> : children;
 }
 
 export default function App() {
@@ -14,7 +19,8 @@ export default function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/login" element={<Navigate to="/" replace />} />
           <Route
             path="/chat"
             element={
@@ -31,7 +37,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </ErrorBoundary>

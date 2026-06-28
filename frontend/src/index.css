@@ -4,52 +4,47 @@
 
 *,
 *::before,
-*::after {
-  box-sizing: border-box;
-}
+*::after { box-sizing: border-box; }
 
-html {
-  text-rendering: optimizeLegibility;
-  -webkit-text-size-adjust: 100%;
-}
+html { text-rendering: optimizeLegibility; -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
-  background-color: #0f1115;
-  color: #e8eaf0;
-  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  background-color: #F1F4F1;
+  color: #182420;
+  font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
 }
 
-/* Selection */
-::selection {
-  background-color: rgba(91, 108, 255, 0.3);
-  color: #fff;
-}
+textarea, button, input { font-family: inherit; }
 
-/* Thin scrollbar globally */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #252830;
-  border-radius: 2px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #3a3e4e;
-}
+::selection { background: rgba(28,140,91,.18); }
 
-/* Input autofill background fix */
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-thumb { background: #CDD8CF; border-radius: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 100px #0f1115 inset;
-  -webkit-text-fill-color: #e8eaf0;
-  caret-color: #e8eaf0;
+  -webkit-box-shadow: 0 0 0 100px #F1F4F1 inset;
+  -webkit-text-fill-color: #182420;
+  caret-color: #182420;
 }
+
+.dot-grid {
+  background-image: radial-gradient(rgba(24,36,32,.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+@keyframes rise    { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:none } }
+@keyframes blink   { 0%,80%,100% { opacity:.2 } 40% { opacity:1 } }
+@keyframes scan    { 0% { transform:translateY(0) } 100% { transform:translateY(320px) } }
+@keyframes bounce  { 0%,60%,100% { transform:translateY(0) } 30% { transform:translateY(-4px) } }
+
+.animate-rise   { animation: rise .3s both; }
+.animate-blink  { animation: blink 1.6s infinite; }
+.animate-scan   { animation: scan 4.5s linear infinite; }
+.animate-bounce-dot { animation: bounce .9s ease infinite; }

@@ -1,26 +1,10 @@
-import { X, CheckCircle, AlertCircle } from 'lucide-react';
-
 export default function Toast({ toast, onDismiss }) {
-  const isSuccess = toast.type === 'success';
-
   return (
-    <div
-      className={`flex items-center gap-3 px-4 py-3 rounded-lg border text-sm shadow-xl max-w-xs animate-in ${
-        isSuccess
-          ? 'bg-panel border-green-500/30'
-          : 'bg-panel border-red-500/30'
-      }`}
-    >
-      {isSuccess
-        ? <CheckCircle size={15} className="text-green-400 flex-shrink-0" />
-        : <AlertCircle size={15} className="text-red-400 flex-shrink-0" />}
-      <span className="flex-1 text-[#e8eaf0]">{toast.message}</span>
-      <button
-        onClick={onDismiss}
-        className="text-zinc-500 hover:text-[#e8eaf0] transition-colors flex-shrink-0"
-      >
-        <X size={13} />
-      </button>
+    <div className="flex items-center gap-[11px] bg-ink text-paper px-[17px] py-3 rounded-[5px] animate-rise min-w-[210px]"
+      style={{ boxShadow: '0 18px 44px -18px rgba(24,36,32,.55)' }}>
+      <span className="text-forest text-[9px]">●</span>
+      <span className="text-[13px] flex-1">{toast.message}</span>
+      <button onClick={() => onDismiss(toast.id)} className="text-muted hover:text-paper transition-colors text-xs ml-2">✕</button>
     </div>
   );
 }

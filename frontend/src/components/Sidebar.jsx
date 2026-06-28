@@ -1,159 +1,124 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FileText, Hash, Cloud, RefreshCw, LogOut, Zap, PenSquare, Settings } from 'lucide-react';
 import api from '../lib/axios';
 
 const SOURCES = [
-  { id: 'notion', label: 'Notion', Icon: FileText, color: '#e2e4f0', endpoint: '/api/ingest/notion' },
-  { id: 'slack', label: 'Slack', Icon: Hash, color: '#36C5F0', endpoint: '/api/ingest/slack' },
-  { id: 'google_drive', label: 'Google Drive', Icon: Cloud, color: '#4285F4', endpoint: '/api/ingest/google-drive' },
+  { id: 'notion',       label: 'Notion',       letter: 'N', endpoint: '/api/ingest/notion' },
+  { id: 'slack',        label: 'Slack',         letter: 'S', endpoint: '/api/ingest/slack' },
+  { id: 'google_drive', label: 'Google Drive',  letter: 'D', endpoint: '/api/ingest/google-drive' },
 ];
-
-function relativeTime(iso) {
-  if (!iso) return 'Never synced';
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
 
 export default function Sidebar({ email, addToast, onNewChat }) {
   const [syncState, setSyncState] = useState({});
-  const [lastSynced, setLastSynced] = useState({});
   const navigate = useNavigate();
-
-  const companyName = localStorage.getItem('company_name');
+  const companyName = localStorage.getItem('company_name') ?? '';
   const initial = email ? email.charAt(0).toUpperCase() : '?';
 
   const sync = async (source) => {
     if (syncState[source.id] === 'loading') return;
     setSyncState((p) => ({ ...p, [source.id]: 'loading' }));
-
     try {
       await api.post(source.endpoint);
-      const now = new Date().toISOString();
-      setSyncState((p) => ({ ...p, [source.id]: 'success' }));
-      setLastSynced((p) => ({ ...p, [source.id]: now }));
-      addToast(`${source.label} synced`, 'success');
-      setTimeout(() => setSyncState((p) => ({ ...p, [source.id]: 'idle' })), 3000);
+      setSyncState((p) => ({ ...p, [source.id]: 'done' }));
+      addToast(`${source.label} sync started`);
+      setTimeout(() => setSyncState((p) => ({ ...p, [source.id]: null })), 3000);
     } catch (err) {
       if (err.response?.status !== 401) {
-        setSyncState((p) => ({ ...p, [source.id]: 'error' }));
-        addToast(`Failed to sync ${source.label}`, 'error');
-        setTimeout(() => setSyncState((p) => ({ ...p, [source.id]: 'idle' })), 3000);
+        addToast(`Failed to sync ${source.label}`);
+        setSyncState((p) => ({ ...p, [source.id]: null }));
       }
     }
   };
 
-  const logout = () => {
-    localStorage.clear();
-    navigate('/login');
-  };
+  const logout = () => { localStorage.clear(); navigate('/'); };
 
   return (
-    <aside className="w-[260px] flex-shrink-0 bg-panel border-r border-rim flex flex-col h-full select-none">
+    <aside className="w-[274px] flex-shrink-0 bg-sidebar border-r border-border-soft flex flex-col h-full select-none">
       {/* Wordmark */}
-      <div className="px-4 py-3.5 border-b border-rim flex items-center gap-2">
-        <div className="w-6 h-6 rounded-md bg-accent flex items-center justify-center flex-shrink-0">
-          <Zap size={13} className="text-white" />
-        </div>
-        <span className="text-[#e8eaf0] text-sm font-semibold tracking-tight">NexusAI</span>
-      </div>
+      <button
+        onClick={() => navigate('/login')}
+        className="flex items-baseline gap-2.5 px-[22px] py-[21px] border-b border-border-soft text-left hover:opacity-80 transition-opacity"
+      >
+        <span className="font-serif font-medium text-[20px] text-ink">Nexus</span>
+        <span className="font-mono text-[9px] tracking-[.2em] text-muted uppercase">Workspace</span>
+      </button>
 
-      {/* New chat */}
-      <div className="px-3 pt-3 pb-1">
+      {/* New thread */}
+      <div className="px-4 py-4">
         <button
           onClick={onNewChat}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-[#e8eaf0] border border-rim hover:border-zinc-600 hover:bg-lift transition-all"
+          className="w-full flex items-center gap-2.5 bg-surface border border-border-input hover:border-forest hover:text-forest text-ink text-[13.5px] font-medium px-3.5 py-[11px] rounded-[4px] transition-all"
         >
-          <PenSquare size={13} />
-          New chat
+          <span className="text-base leading-none">＋</span>
+          New thread
         </button>
       </div>
 
       {/* Sources */}
-      <div className="flex-1 px-3 py-3 overflow-y-auto">
-        <p className="px-2 mb-2 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
+      <div className="flex-1 px-4 overflow-y-auto">
+        <div className="font-mono text-[9px] tracking-[.22em] text-muted uppercase px-2 pb-3">
           Connected Sources
-        </p>
-
-        <div className="space-y-0.5">
-          {SOURCES.map((source) => {
-            const { Icon } = source;
-            const state = syncState[source.id] ?? 'idle';
-            const isLoading = state === 'loading';
-            const dotColor =
-              state === 'success' ? '#22c55e' : state === 'error' ? '#ef4444' : '#3a3d4e';
-
-            return (
-              <div
-                key={source.id}
-                className="group rounded-lg px-2 py-2 hover:bg-lift transition-colors"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div
-                      className="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors"
-                      style={{ backgroundColor: dotColor }}
-                    />
-                    <Icon size={13} style={{ color: source.color }} className="flex-shrink-0" />
-                    <span className="text-sm text-zinc-300 truncate">{source.label}</span>
-                  </div>
-
-                  <button
-                    onClick={() => sync(source)}
-                    disabled={isLoading}
-                    title={`Sync ${source.label}`}
-                    className="flex items-center gap-1 text-[11px] text-zinc-600 hover:text-zinc-300 transition-colors disabled:opacity-40 flex-shrink-0 opacity-0 group-hover:opacity-100"
-                  >
-                    <RefreshCw size={11} className={isLoading ? 'animate-spin' : ''} />
-                    {isLoading ? 'Syncing' : 'Sync'}
-                  </button>
-                </div>
-
-                <p className="text-[10px] text-zinc-700 mt-0.5 pl-[26px]">
-                  {isLoading ? 'Syncing…' : relativeTime(lastSynced[source.id])}
-                </p>
-              </div>
-            );
-          })}
         </div>
+
+        {SOURCES.map((source) => {
+          const state = syncState[source.id];
+          const syncing = state === 'loading';
+          return (
+            <div
+              key={source.id}
+              className="flex items-center justify-between gap-2 px-2 py-[9px] rounded-[5px] hover:bg-[#E0E7E1] transition-colors"
+            >
+              <div className="flex items-center gap-[11px] min-w-0">
+                <span className="w-[21px] h-[21px] rounded-[5px] bg-ink text-paper font-mono text-[9px] flex items-center justify-center flex-shrink-0">
+                  {source.letter}
+                </span>
+                <div className="min-w-0">
+                  <div className="text-[13px] text-ink truncate">{source.label}</div>
+                  {syncing && (
+                    <div className="font-mono text-[10.5px] text-dim mt-0.5">Syncing…</div>
+                  )}
+                  {state === 'done' && !syncing && (
+                    <div className="font-mono text-[10.5px] text-forest mt-0.5">Queued ✓</div>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => sync(source)}
+                title={`Sync ${source.label}`}
+                className="text-[13px] text-muted hover:text-forest transition-colors flex-shrink-0"
+              >
+                ↻
+              </button>
+            </div>
+          );
+        })}
 
         <Link
           to="/connections"
-          className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-zinc-500 hover:text-zinc-200 hover:bg-lift border border-transparent hover:border-rim transition-all"
+          className="w-full flex items-center gap-2.5 mt-3 px-2 py-[10px] rounded-[5px] text-[12.5px] text-sage hover:bg-[#E0E7E1] hover:text-ink transition-all"
         >
-          <Settings size={13} />
-          Manage connections
+          ⚙&nbsp;&nbsp;Manage connections
         </Link>
       </div>
 
       {/* User footer */}
-      <div className="border-t border-rim px-3 py-3">
-        <div className="flex items-center gap-2.5 px-2 py-1.5">
-          {/* Avatar */}
-          <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-            <span className="text-[10px] font-bold text-accent">{initial}</span>
-          </div>
-
-          <div className="flex-1 min-w-0">
-            {companyName && (
-              <p className="text-xs font-medium text-zinc-300 truncate leading-tight">{companyName}</p>
-            )}
-            <p className="text-[11px] text-zinc-500 truncate leading-tight">{email}</p>
-          </div>
-
-          <button
-            onClick={logout}
-            title="Sign out"
-            className="p-1.5 rounded-md text-zinc-600 hover:text-[#e8eaf0] hover:bg-lift transition-colors flex-shrink-0"
-          >
-            <LogOut size={13} />
-          </button>
+      <div className="border-t border-border-soft px-4 py-3.5 flex items-center gap-[11px]">
+        <div className="w-[30px] h-[30px] rounded-full bg-forest text-[#F2FBF6] font-serif text-[15px] flex items-center justify-center flex-shrink-0">
+          {initial}
         </div>
+        <div className="flex-1 min-w-0">
+          {companyName && (
+            <div className="text-[12.5px] font-semibold text-ink leading-tight truncate">{companyName}</div>
+          )}
+          <div className="text-[11px] text-dim leading-tight truncate">{email}</div>
+        </div>
+        <button
+          onClick={logout}
+          title="Sign out"
+          className="text-[13px] text-muted hover:text-ink transition-colors flex-shrink-0"
+        >
+          ↩
+        </button>
       </div>
     </aside>
   );
