@@ -1,4 +1,3 @@
-import os
 import time
 import logging
 from datetime import datetime, timezone
@@ -6,21 +5,26 @@ from typing import Optional
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
+from app.db import get_connection_row
+from app.security.encryption import decrypt_token
+
 logger = logging.getLogger("nexusai.connectors.slack")
 
 
 class SlackConnector:
-    def __init__(self):
-        token = os.environ.get("SLACK_BOT_TOKEN")
-        if not token:
-            raise ValueError("SLACK_BOT_TOKEN not set in environment")
-        self.client = WebClient(token=token)
+    def __init__(self, company_id: str):
+        row = get_connection_row(company_id, "slack")
+        if not row:
+            raise ValueError(
+                "Slack is not connected for this company. "
+                "Go to /connections to connect it first."
+            )
+        self.client = WebClient(token=decrypt_token(row["encrypted_access_token"]))
 
     def fetch_all_messages(self, company_id: str = "unknown") -> list[dict]:
         """
         Fetch messages from all channels the bot has been invited to.
-        Returns one document per channel, with all messages concatenated
-        — this groups conversation context together for better chunking.
+        Returns one document per channel with all messages concatenated.
         """
         logger.info(f"Starting Slack fetch for company: {company_id}")
         results = []
@@ -42,7 +46,6 @@ class SlackConnector:
         return results
 
     def _list_channels(self) -> list[dict]:
-        """List all public + private channels the bot is a member of."""
         channels = []
         cursor = None
 
@@ -63,7 +66,6 @@ class SlackConnector:
         return channels
 
     def _fetch_channel_messages(self, channel: dict) -> Optional[dict]:
-        """Fetch and format all messages in a single channel."""
         channel_id = channel["id"]
         channel_name = channel.get("name", "unknown")
 
@@ -83,10 +85,8 @@ class SlackConnector:
                 if not cursor:
                     break
 
-                # Slack rate limits — small delay between paginated calls
                 time.sleep(0.3)
 
-            # Sort oldest to newest for readable context
             messages.sort(key=lambda m: float(m.get("ts", 0)))
 
             content = self._format_messages(messages)
@@ -117,13 +117,8 @@ class SlackConnector:
             return None
 
     def _format_messages(self, messages: list[dict]) -> str:
-        """
-        Convert raw Slack messages into readable plain text.
-        Skips bot messages, joins/leaves, and other noise.
-        """
         lines = []
         for msg in messages:
-            # Skip system messages (joins, leaves, channel topic changes)
             if msg.get("subtype") in {
                 "channel_join", "channel_leave", "channel_topic",
                 "channel_purpose", "channel_name", "bot_message",

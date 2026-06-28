@@ -8,6 +8,7 @@ load_dotenv()
 from app.middleware.auth_middleware import SecurityMiddleware
 from app.api.ask import router as ask_router
 from app.api.auth import router as auth_router
+from app.api.connections import router as connections_router
 from app.api.ingest import router as ingest_router
 
 app = FastAPI(
@@ -22,9 +23,9 @@ app.add_middleware(SecurityMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
-        "https://your-vercel-app.vercel.app"
+        "https://your-vercel-app.vercel.app",
     ],
+    allow_origin_regex=r"http://localhost:\d+",  # any localhost port in dev
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,6 +33,7 @@ app.add_middleware(
 
 app.include_router(ask_router)
 app.include_router(auth_router)
+app.include_router(connections_router)
 app.include_router(ingest_router)
 
 

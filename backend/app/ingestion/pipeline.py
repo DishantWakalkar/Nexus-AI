@@ -1,10 +1,10 @@
 import logging
 from app.connectors.notion import NotionConnector
 from app.connectors.slack import SlackConnector
+from app.connectors.google_drive import GoogleDriveConnector
 from app.ingestion.chunker import RecursiveChunker
 from app.ingestion.embedder import Embedder
 from app.ingestion.vector_store import VectorStore
-from app.connectors.google_drive import GoogleDriveConnector
 
 logger = logging.getLogger("nexusai.ingestion.pipeline")
 
@@ -16,28 +16,18 @@ class IngestionPipeline:
         self.vector_store = VectorStore()
 
     def run_notion(self, company_id: str) -> dict:
-        """
-        Full pipeline: fetch Notion pages → chunk → embed → store.
-        Returns a summary of what was ingested.
-        """
         logger.info(f"Starting Notion ingestion for company: {company_id}")
 
-        # Step 1 — fetch pages
-        connector = NotionConnector()
+        connector = NotionConnector(company_id=company_id)
         pages = connector.fetch_all_pages(company_id=company_id)
         logger.info(f"Fetched {len(pages)} pages")
 
-        # Step 2 — chunk
         all_chunks = []
         for page in pages:
-            chunks = self.chunker.chunk_document(page)
-            all_chunks.extend(chunks)
+            all_chunks.extend(self.chunker.chunk_document(page))
         logger.info(f"Created {len(all_chunks)} chunks from {len(pages)} pages")
 
-        # Step 3 — embed
         records = self.embedder.embed_chunks(all_chunks)
-
-        # Step 4 — store
         inserted = self.vector_store.upsert_chunks(records, company_id)
 
         summary = {
@@ -46,23 +36,19 @@ class IngestionPipeline:
             "chunks_stored": inserted,
             "company_id": company_id,
         }
-        logger.info(f"Ingestion complete: {summary}")
+        logger.info(f"Notion ingestion complete: {summary}")
         return summary
-    
+
     def run_slack(self, company_id: str) -> dict:
-        """
-        Full pipeline: fetch Slack channels → chunk → embed → store.
-        """
         logger.info(f"Starting Slack ingestion for company: {company_id}")
 
-        connector = SlackConnector()
+        connector = SlackConnector(company_id=company_id)
         channels = connector.fetch_all_messages(company_id=company_id)
         logger.info(f"Fetched {len(channels)} channels")
 
         all_chunks = []
         for doc in channels:
-            chunks = self.chunker.chunk_document(doc)
-            all_chunks.extend(chunks)
+            all_chunks.extend(self.chunker.chunk_document(doc))
         logger.info(f"Created {len(all_chunks)} chunks from {len(channels)} channels")
 
         records = self.embedder.embed_chunks(all_chunks)
@@ -76,20 +62,17 @@ class IngestionPipeline:
         }
         logger.info(f"Slack ingestion complete: {summary}")
         return summary
+
     def run_google_drive(self, company_id: str) -> dict:
-        """
-        Full pipeline: fetch Google Docs → chunk → embed → store.
-        """
         logger.info(f"Starting Google Drive ingestion for company: {company_id}")
 
-        connector = GoogleDriveConnector()
+        connector = GoogleDriveConnector(company_id=company_id)
         docs = connector.fetch_all_documents(company_id=company_id)
         logger.info(f"Fetched {len(docs)} documents")
 
         all_chunks = []
         for doc in docs:
-            chunks = self.chunker.chunk_document(doc)
-            all_chunks.extend(chunks)
+            all_chunks.extend(self.chunker.chunk_document(doc))
         logger.info(f"Created {len(all_chunks)} chunks from {len(docs)} documents")
 
         records = self.embedder.embed_chunks(all_chunks)
