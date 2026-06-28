@@ -18,4 +18,4 @@ print(f"CHUNKS USED: {result['chunks_used']}")
 print()
 print("SOURCES:")
 for s in result["sources"]:
-    print(f"  [{s['source_number']}] {s['title']} — {s['source']} — {s['url']}")
+    print(f"  [{s['source_number']}] {s['title']} - {s['source']} - {s['url']}")

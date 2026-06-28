@@ -7,7 +7,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "fallback_only_in_dev")
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY environment variable is required but not set.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
 
@@ -16,7 +18,7 @@ bearer_scheme = HTTPBearer()
 
 class TokenPayload(BaseModel):
     sub: str          # user_id
-    company_id: str   # THE isolation key — every query is scoped to this
+    company_id: str   # THE isolation key - every query is scoped to this
     email: str
     exp: datetime
 
@@ -51,7 +53,7 @@ def decode_access_token(token: str) -> TokenPayload:
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ) -> TokenPayload:
-    """FastAPI dependency — inject into any route that needs auth."""
+    """FastAPI dependency - inject into any route that needs auth."""
     return decode_access_token(credentials.credentials)
 
 

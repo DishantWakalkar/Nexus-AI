@@ -12,8 +12,8 @@ class HybridRetriever:
     passing results to the LLM.
 
     Semantic catches meaning.
-    BM25 catches exact terms — names, dates, product names.
-    MMR ensures diversity — no 3 chunks saying the same thing.
+    BM25 catches exact terms - names, dates, product names.
+    MMR ensures diversity - no 3 chunks saying the same thing.
     """
 
     def __init__(
@@ -41,7 +41,7 @@ class HybridRetriever:
         """
         logger.info(f"Hybrid retrieval for query='{query[:60]}...' company={company_id}")
 
-        # Step 1 — run both searches
+        # Step 1 - run both searches
         semantic_results = self.semantic.search(
             query, company_id, top_k=15, source_filter=source_filter
         )
@@ -49,10 +49,10 @@ class HybridRetriever:
             query, company_id, top_k=15, source_filter=source_filter
         )
 
-        # Step 2 — merge and score
+        # Step 2 - merge and score
         merged = self._merge_results(semantic_results, bm25_results)
 
-        # Step 3 — MMR reranking for diversity
+        # Step 3 - MMR reranking for diversity
         final = self._mmr_rerank(merged, query)
 
         logger.info(f"Retriever returning {len(final)} chunks after MMR")
@@ -111,7 +111,7 @@ class HybridRetriever:
 
     def _mmr_rerank(self, chunks: list[dict], query: str) -> list[dict]:
         """
-        Maximal Marginal Relevance — selects chunks that are
+        Maximal Marginal Relevance - selects chunks that are
         relevant to the query BUT different from each other.
         Prevents the LLM getting 3 chunks all saying the same thing.
 
@@ -130,7 +130,7 @@ class HybridRetriever:
 
         while len(selected) < self.top_k and remaining:
             if not selected:
-                # First pick — highest combined score
+                # First pick - highest combined score
                 best = remaining[0]
             else:
                 # Score each remaining chunk:

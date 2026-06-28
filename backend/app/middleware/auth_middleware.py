@@ -18,7 +18,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         duration_ms = round((time.perf_counter() - start) * 1000, 1)
 
-        # Log only safe metadata — never request/response body
+        # Log only safe metadata - never request/response body
         logger.info(
             "request",
             extra={
@@ -26,7 +26,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                 "path": request.url.path,          # path only, no query params (may contain tokens)
                 "status": response.status_code,
                 "duration_ms": duration_ms,
-                # company_id from header if present — never user content
+                # company_id from header if present - never user content
                 "company_id": request.headers.get("X-Company-ID", "unknown"),
             }
         )

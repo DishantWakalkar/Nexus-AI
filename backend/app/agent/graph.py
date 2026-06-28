@@ -59,7 +59,7 @@ class NexusAgent:
                         "role": "system",
                         "content": (
                             "You decide if a user question to a company knowledge "
-                            "assistant is too ambiguous to answer without more context — "
+                            "assistant is too ambiguous to answer without more context - "
                             "for example it refers to something not defined in the question itself, "
                             "like 'it', 'that', or 'they' with no clear referent. "
                             "Reply with exactly one word: AMBIGUOUS or CLEAR."
@@ -173,7 +173,7 @@ class NexusAgent:
 
 Answer ONLY using the provided sources. Cite every claim with [SOURCE N].
 If the answer is not in the sources, say: "I could not find this information in your documents."
-Never use outside knowledge. Be concise. Do not add a Sources section — sources are shown separately."""
+Never use outside knowledge. Be concise. Do not add a Sources section - sources are shown separately."""
 
         user_message = f"Sources:\n\n{context}\n\n---\n\nQuestion: {query}"
 

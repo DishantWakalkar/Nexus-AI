@@ -7,9 +7,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // React runtime — rarely changes, long-lived cache
+          // React runtime - rarely changes, long-lived cache
           react: ['react', 'react-dom', 'react-router-dom'],
-          // Markdown pipeline — large but only needed in chat view
+          // Markdown pipeline - large but only needed in chat view
           markdown: ['react-markdown', 'remark-gfm', 'rehype-raw'],
         },
       },

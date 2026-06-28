@@ -23,7 +23,7 @@ class VectorStore:
 
         doc_ids = list({r["doc_id"] for r in records})
 
-        # Step 1 — upsert document metadata into `documents` table
+        # Step 1 - upsert document metadata into `documents` table
         doc_records = []
         for r in records:
             # Only insert once per doc_id (first chunk carries the metadata)
@@ -43,12 +43,12 @@ class VectorStore:
                 doc_records, on_conflict="company_id,source,doc_id"
             ).execute()
 
-        # Step 2 — delete old chunks for these docs before re-inserting
+        # Step 2 - delete old chunks for these docs before re-inserting
         self.client.table("chunks").delete().in_(
             "doc_id", doc_ids
         ).eq("company_id", company_id).execute()
 
-        # Step 3 — insert chunks in batches of 100
+        # Step 3 - insert chunks in batches of 100
         inserted = 0
         batch_size = 100
         chunk_records = [{
@@ -66,7 +66,7 @@ class VectorStore:
             batch = chunk_records[i:i + batch_size]
             self.client.table("chunks").insert(batch).execute()
             inserted += len(batch)
-            logger.info(f"Inserted batch {i//batch_size + 1} — {inserted} chunks total")
+            logger.info(f"Inserted batch {i//batch_size + 1} - {inserted} chunks total")
 
         return inserted
 

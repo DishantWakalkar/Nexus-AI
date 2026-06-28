@@ -8,10 +8,13 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 def _get_fernet() -> Fernet:
     """
     Derives a Fernet key from SECRET_KEY env var.
-    Never stores the key — always derives it at runtime.
+    Never stores the key - always derives it at runtime.
     """
     secret = os.environ["SECRET_KEY"].encode()
-    salt = os.environ.get("ENCRYPTION_SALT", "nexusai_salt_v1").encode()
+    salt_str = os.environ.get("ENCRYPTION_SALT")
+    if not salt_str:
+        raise RuntimeError("ENCRYPTION_SALT environment variable is required but not set.")
+    salt = salt_str.encode()
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,

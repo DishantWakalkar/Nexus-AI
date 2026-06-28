@@ -76,7 +76,7 @@ class RecursiveChunker:
         if len(sentence_splits) > 1:
             return self._merge_splits(sentence_splits)
 
-        # Last resort — hard split by character with overlap
+        # Last resort - hard split by character with overlap
         return self._hard_split(text)
 
     def _merge_splits(self, splits: list[str]) -> list[str]:

@@ -8,8 +8,9 @@ import httpx
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi.responses import RedirectResponse
+from pydantic import BaseModel
 
-from app.db import get_supabase
+from app.db import get_supabase, get_connection_row
 from app.security.jwt_auth import (
     CurrentUser,
     TokenPayload,
@@ -52,7 +53,7 @@ def _decode_oauth_state(state: str) -> dict:
     except jwt.ExpiredSignatureError:
         raise HTTPException(400, "OAuth state expired. Please try connecting again.")
     except jwt.InvalidTokenError:
-        raise HTTPException(400, "Invalid OAuth state. Possible CSRF attempt — aborting.")
+        raise HTTPException(400, "Invalid OAuth state. Possible CSRF attempt - aborting.")
 
 
 def _upsert_connection(
@@ -323,3 +324,84 @@ async def google_drive_callback(code: str = Query(...), state: str = Query(...))
     )
 
     return RedirectResponse(f"{_frontend_url()}/connections?google_drive=success")
+
+
+# ── Google Drive Picker support ───────────────────────────────────────────────
+
+class FolderUpdate(BaseModel):
+    folder_id: str
+    folder_name: str = ""
+
+
+async def _get_fresh_google_token(company_id: str) -> str:
+    """Return a valid Google access token, refreshing if it's expired or close to expiry."""
+    row = get_connection_row(company_id, "google_drive")
+    if not row:
+        raise HTTPException(404, "Google Drive is not connected.")
+
+    access_token = decrypt_token(row["encrypted_access_token"])
+    expires_at_str: str = row["metadata"].get("expires_at", "")
+
+    should_refresh = False
+    if expires_at_str:
+        try:
+            expires_at = datetime.fromisoformat(expires_at_str.replace("Z", "+00:00"))
+            if expires_at <= datetime.now(timezone.utc) + timedelta(minutes=5):
+                should_refresh = True
+        except ValueError:
+            should_refresh = True
+
+    if should_refresh and row.get("encrypted_refresh_token"):
+        refresh_token = decrypt_token(row["encrypted_refresh_token"])
+        async with httpx.AsyncClient(timeout=20) as client:
+            resp = await client.post(
+                "https://oauth2.googleapis.com/token",
+                data={
+                    "client_id": os.environ["GOOGLE_CLIENT_ID"],
+                    "client_secret": os.environ["GOOGLE_CLIENT_SECRET"],
+                    "refresh_token": refresh_token,
+                    "grant_type": "refresh_token",
+                },
+            )
+        if resp.status_code == 200:
+            token_data = resp.json()
+            access_token = token_data["access_token"]
+            expires_in = token_data.get("expires_in", 3600)
+            new_expires_at = (datetime.now(timezone.utc) + timedelta(seconds=expires_in)).isoformat()
+            metadata = {**row["metadata"], "expires_at": new_expires_at}
+            get_supabase().table("company_connections").update(
+                {"encrypted_access_token": encrypt_token(access_token), "metadata": metadata}
+            ).eq("company_id", company_id).eq("source", "google_drive").execute()
+
+    return access_token
+
+
+@router.get("/google-drive/picker-token")
+async def google_drive_picker_token(current_user: TokenPayload = CurrentUser):
+    """Return a fresh access token so the frontend can open the Google Picker."""
+    access_token = await _get_fresh_google_token(current_user.company_id)
+    row = get_connection_row(current_user.company_id, "google_drive")
+    return {
+        "access_token": access_token,
+        "developer_key": os.environ.get("GOOGLE_API_KEY", ""),
+        "current_folder_id": row["metadata"].get("folder_id", ""),
+        "current_folder_name": row["metadata"].get("folder_name", ""),
+    }
+
+
+@router.patch("/google-drive/folder")
+async def update_google_drive_folder(
+    body: FolderUpdate,
+    current_user: TokenPayload = CurrentUser,
+):
+    """Save the folder selected via Google Picker to this company's connection."""
+    row = get_connection_row(current_user.company_id, "google_drive")
+    if not row:
+        raise HTTPException(404, "Google Drive is not connected.")
+
+    metadata = {**row["metadata"], "folder_id": body.folder_id, "folder_name": body.folder_name}
+    get_supabase().table("company_connections").update(
+        {"metadata": metadata}
+    ).eq("company_id", current_user.company_id).eq("source", "google_drive").execute()
+
+    return {"folder_id": body.folder_id, "folder_name": body.folder_name}

@@ -48,7 +48,7 @@ class BM25Search:
             logger.warning(f"No chunks found for company={company_id}")
             return []
 
-        # Tokenise — simple whitespace + lowercase
+        # Tokenise - simple whitespace + lowercase
         tokenised_corpus = [
             chunk["content"].lower().split()
             for chunk in all_chunks

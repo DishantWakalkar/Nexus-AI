@@ -64,7 +64,7 @@ export default function Chat() {
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  // Core fetch — shared by send and retry
+  // Core fetch - shared by send and retry
   const fetchAnswer = useCallback(async (query, appendUserMsg = true) => {
     if (appendUserMsg) {
       setMessages((p) => [
@@ -98,7 +98,7 @@ export default function Chat() {
           ...p,
           {
             role: 'assistant',
-            content: 'Something went wrong — the server may be unavailable. Please try again.',
+            content: 'Something went wrong - the server may be unavailable. Please try again.',
             sources: [],
             needs_clarification: false,
             isError: true,
@@ -205,7 +205,7 @@ function EmptyState({ onSelect }) {
         </div>
         <h2 className="text-[#e8eaf0] text-xl font-semibold mb-1.5">Ask NexusAI anything</h2>
         <p className="text-zinc-500 text-sm max-w-xs mx-auto leading-relaxed">
-          Instant answers from your Notion, Slack, and Google Drive — every response is cited.
+          Instant answers from your Notion, Slack, and Google Drive - every response is cited.
         </p>
       </div>
 

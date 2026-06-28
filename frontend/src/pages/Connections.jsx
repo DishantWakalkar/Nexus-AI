@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Zap, FileText, Hash, Cloud, ExternalLink, Check,
-  AlertCircle, RefreshCw, Unlink, ChevronRight, X,
+  AlertCircle, RefreshCw, Unlink, ChevronRight, X, FolderOpen,
 } from 'lucide-react';
 import api from '../lib/axios';
 
@@ -102,6 +102,51 @@ export default function Connections() {
       setLoading(false);
     }
   };
+
+  const openFolderPicker = useCallback(async () => {
+    setActionState((p) => ({ ...p, google_drive: 'picking' }));
+    try {
+      const { data } = await api.get('/api/connections/google-drive/picker-token');
+
+      await new Promise((resolve, reject) => {
+        if (window.google?.picker) return resolve();
+        const loadPicker = () => window.gapi.load('picker', resolve);
+        if (window.gapi) return loadPicker();
+        const script = document.createElement('script');
+        script.src = 'https://apis.google.com/js/api.js';
+        script.onload = loadPicker;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+
+      const view = new window.google.picker.DocsView(window.google.picker.ViewId.FOLDERS)
+        .setIncludeFolders(true)
+        .setSelectFolderEnabled(true)
+        .setMimeTypes('application/vnd.google-apps.folder');
+
+      const builder = new window.google.picker.PickerBuilder()
+        .addView(view)
+        .setOAuthToken(data.access_token)
+        .setCallback(async (result) => {
+          if (result[window.google.picker.Response.ACTION] === window.google.picker.Action.PICKED) {
+            const folder = result[window.google.picker.Response.DOCUMENTS][0];
+            await api.patch('/api/connections/google-drive/folder', {
+              folder_id: folder[window.google.picker.Document.ID],
+              folder_name: folder[window.google.picker.Document.NAME],
+            });
+            addToast(`Folder set to "${folder[window.google.picker.Document.NAME]}"`, 'success');
+            fetchConnections();
+          }
+          setActionState((p) => ({ ...p, google_drive: 'idle' }));
+        });
+
+      if (data.developer_key) builder.setDeveloperKey(data.developer_key);
+      builder.build().setVisible(true);
+    } catch {
+      addToast('Could not open folder picker.', 'error');
+      setActionState((p) => ({ ...p, google_drive: 'idle' }));
+    }
+  }, []);
 
   const connect = (src) => {
     const token = localStorage.getItem('access_token');
@@ -242,13 +287,13 @@ export default function Connections() {
                         </p>
                       )}
 
-                      {/* Folder ID — only for Google Drive when not yet connected */}
+                      {/* Folder ID - only for Google Drive when not yet connected */}
                       {src.needsFolderId && !isConnected && (
                         <div className="mt-2.5 space-y-1">
                           <input
                             value={folderIdInput}
                             onChange={(e) => setFolderIdInput(e.target.value)}
-                            placeholder="Folder ID (optional — leave empty for full Drive access)"
+                            placeholder="Folder ID (optional - leave empty for full Drive access)"
                             className="w-full bg-ink border border-rim rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-accent transition-colors"
                           />
                           <p className="text-[10px] text-zinc-600">
@@ -262,6 +307,23 @@ export default function Connections() {
                     <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
                       {isConnected ? (
                         <>
+                          {src.id === 'google_drive' && (
+                            <button
+                              onClick={openFolderPicker}
+                              disabled={busy}
+                              title={conn?.metadata?.folder_name || 'Choose which Drive folder to index'}
+                              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-rim text-zinc-400 hover:text-[#e8eaf0] hover:border-zinc-600 disabled:opacity-40 transition-all max-w-[140px]"
+                            >
+                              <FolderOpen size={11} className="flex-shrink-0" />
+                              <span className="truncate">
+                                {state === 'picking'
+                                  ? 'Opening…'
+                                  : conn?.metadata?.folder_name
+                                  ? conn.metadata.folder_name
+                                  : 'Choose folder'}
+                              </span>
+                            </button>
+                          )}
                           <button
                             onClick={() => sync(src)}
                             disabled={busy}
@@ -299,7 +361,7 @@ export default function Connections() {
           </div>
         )}
 
-        {/* Setup reminder — only shown while at least one source is not connected */}
+        {/* Setup reminder - only shown while at least one source is not connected */}
         {!loading && connections.some((c) => !c.connected) && (
           <div className="mt-8 p-4 bg-amber-500/10 border border-amber-500/25 rounded-xl">
             <div className="flex gap-3">

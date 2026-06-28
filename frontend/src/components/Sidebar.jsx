@@ -76,18 +76,9 @@ export default function Sidebar({ email, addToast, onNewChat }) {
 
       {/* Sources */}
       <div className="flex-1 px-3 py-3 overflow-y-auto">
-        <div className="flex items-center justify-between px-2 mb-2">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
-            Connected Sources
-          </p>
-          <Link
-            to="/connections"
-            title="Manage connections"
-            className="text-zinc-600 hover:text-zinc-300 transition-colors"
-          >
-            <Settings size={11} />
-          </Link>
-        </div>
+        <p className="px-2 mb-2 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
+          Connected Sources
+        </p>
 
         <div className="space-y-0.5">
           {SOURCES.map((source) => {
@@ -130,6 +121,14 @@ export default function Sidebar({ email, addToast, onNewChat }) {
             );
           })}
         </div>
+
+        <Link
+          to="/connections"
+          className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-zinc-500 hover:text-zinc-200 hover:bg-lift border border-transparent hover:border-rim transition-all"
+        >
+          <Settings size={13} />
+          Manage connections
+        </Link>
       </div>
 
       {/* User footer */}

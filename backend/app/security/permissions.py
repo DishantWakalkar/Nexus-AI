@@ -26,19 +26,19 @@ def can_user_access_document(
 ) -> bool:
     """
     Rules:
-    1. Document must belong to the same company — hard block.
+    1. Document must belong to the same company - hard block.
     2. If restricted_user_ids is set, user must be in it.
     3. Otherwise, any company member can access.
     """
-    # Rule 1 — company isolation is absolute
+    # Rule 1 - company isolation is absolute
     if permission.company_id != company_id:
         return False
 
-    # Rule 2 — restricted document
+    # Rule 2 - restricted document
     if permission.restricted_user_ids:
         return user_id in permission.restricted_user_ids
 
-    # Rule 3 — open to whole company
+    # Rule 3 - open to whole company
     return True
 
 
@@ -49,7 +49,7 @@ def filter_chunks_by_permission(
 ) -> list[dict]:
     """
     Filter retrieved chunks to only those the user has access to.
-    Called after every retrieval — before anything is passed to the LLM.
+    Called after every retrieval - before anything is passed to the LLM.
     """
     accessible = []
     for chunk in chunks:

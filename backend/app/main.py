@@ -20,12 +20,13 @@ app = FastAPI(
 )
 
 app.add_middleware(SecurityMiddleware)
+
+_is_dev = os.getenv("APP_ENV") == "development"
+_frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://your-vercel-app.vercel.app",
-    ],
-    allow_origin_regex=r"http://localhost:\d+",  # any localhost port in dev
+    allow_origins=[_frontend_url],
+    allow_origin_regex=r"http://localhost:\d+" if _is_dev else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

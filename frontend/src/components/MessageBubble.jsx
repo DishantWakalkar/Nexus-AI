@@ -38,7 +38,7 @@ export default function MessageBubble({ message, onRetry }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Memoized component map — only rebuilds if scrollToSource identity changes (never)
+  // Memoized component map - only rebuilds if scrollToSource identity changes (never)
   const mdComponents = useMemo(
     () => ({
       // Citation badge injected via rehype-raw
@@ -166,7 +166,7 @@ export default function MessageBubble({ message, onRetry }) {
             </div>
           )}
 
-          {/* Hover actions — copy */}
+          {/* Hover actions - copy */}
           {!message.isError && (
             <div className="absolute top-2.5 right-3 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
@@ -219,7 +219,7 @@ export default function MessageBubble({ message, onRetry }) {
           </div>
         )}
 
-        {/* Meta row — timestamp + chunks, revealed on hover */}
+        {/* Meta row - timestamp + chunks, revealed on hover */}
         {(message.timestamp || message.chunks_used > 0) && (
           <div className="flex items-center gap-3 pl-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {message.timestamp && (

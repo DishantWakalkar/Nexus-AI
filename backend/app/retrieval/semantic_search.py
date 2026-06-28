@@ -35,7 +35,7 @@ class SemanticSearch:
         """
         Embed the query and find the most semantically similar chunks
         in pgvector using cosine distance.
-        Always scoped to company_id — cross-company access is impossible.
+        Always scoped to company_id - cross-company access is impossible.
         """
         # Embed the query using the same model as ingestion
         query_embedding = self.model.encode(

@@ -8,7 +8,7 @@ import logging
 router = APIRouter(prefix="/api", tags=["ask"])
 logger = logging.getLogger("nexusai.api.ask")
 
-# Singleton — avoid reloading the embedding model on every request
+# Singleton - avoid reloading the embedding model on every request
 _agent_instance: Optional[NexusAgent] = None
 
 
@@ -37,7 +37,7 @@ async def ask(
     current_user: TokenPayload = CurrentUser,
 ):
     """
-    Ask NexusAI a question. Runs through the LangGraph agent —
+    Ask NexusAI a question. Runs through the LangGraph agent -
     classifies ambiguity, retrieves with retry logic, generates
     a cited answer scoped to the user's company and permissions.
     """

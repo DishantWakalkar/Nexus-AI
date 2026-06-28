@@ -102,7 +102,7 @@ class GoogleDriveConnector:
                 "and trashed=false"
             )
         else:
-            # No folder scoping — index all Google Docs in the Drive
+            # No folder scoping - index all Google Docs in the Drive
             q = "mimeType='application/vnd.google-apps.document' and trashed=false"
 
         files = []
