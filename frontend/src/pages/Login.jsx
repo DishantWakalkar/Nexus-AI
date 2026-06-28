@@ -171,33 +171,37 @@ export default function Login() {
 
   // ── Landing page ──────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-ink flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-lg text-center">
+    <div className="min-h-screen bg-ink flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="pointer-events-none absolute inset-0" style={{background:'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(91,108,255,.18) 0%, transparent 70%)'}} />
+      <div className="pointer-events-none absolute inset-0" style={{background:'radial-gradient(ellipse 60% 40% at 80% 90%, rgba(91,108,255,.07) 0%, transparent 60%)'}} />
+
+      <div className="w-full max-w-lg text-center relative z-10">
         {/* Logo */}
         <div className="flex items-center gap-3 justify-center mb-10">
-          <div className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center shadow-lg shadow-accent/30">
+          <div className="w-11 h-11 rounded-[14px] flex items-center justify-center" style={{background:'linear-gradient(135deg,#5b6cff,#7b8bff)',boxShadow:'0 8px 32px rgba(91,108,255,.35),0 0 0 1px rgba(255,255,255,.08)'}}>
             <Zap size={22} className="text-white" />
           </div>
-          <span className="text-[#e8eaf0] text-3xl font-bold tracking-tight">NexusAI</span>
+          <span className="text-[#e8eaf0] text-3xl font-extrabold tracking-tight">NexusAI</span>
         </div>
 
         {/* Hero */}
-        <h1 className="text-4xl font-bold text-[#e8eaf0] leading-tight mb-4">
+        <h1 className="text-[42px] font-extrabold text-[#e8eaf0] leading-[1.12] tracking-tight mb-4">
           Your company's knowledge,<br />
-          <span className="text-accent">instantly searchable.</span>
+          <span style={{background:'linear-gradient(135deg,#5b6cff,#7b8bff)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>instantly searchable.</span>
         </h1>
-        <p className="text-zinc-500 text-base leading-relaxed mb-10 max-w-md mx-auto">
-          Ask questions in plain English. Get cited answers pulled directly from Notion, Slack, and Google Drive - in seconds.
+        <p className="text-[#71768a] text-base leading-relaxed mb-10 max-w-md mx-auto">
+          Ask questions in plain English. Get cited answers pulled directly from Notion, Slack, and Google Drive — in seconds.
         </p>
 
         {/* Source pills */}
-        <div className="flex items-center justify-center gap-3 mb-10">
+        <div className="flex items-center justify-center gap-2.5 mb-10">
           {SOURCES.map(({ Icon, label, color }) => (
             <div
               key={label}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-rim bg-panel text-xs text-zinc-400"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-rim bg-panel text-xs text-zinc-500 font-medium"
             >
-              <Icon size={12} style={{ color }} />
+              <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
               {label}
             </div>
           ))}
@@ -205,7 +209,7 @@ export default function Login() {
 
         {/* Error */}
         {error && (
-          <div className="flex items-start gap-2.5 rounded-lg bg-red-500/15 border border-red-500/40 px-3.5 py-3 mb-5 text-left max-w-sm mx-auto">
+          <div className="flex items-start gap-2.5 rounded-xl bg-red-500/10 border border-red-500/30 px-3.5 py-3 mb-6 text-left max-w-sm mx-auto">
             <AlertCircle size={15} className="text-red-400 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-red-300 leading-snug">{error}</p>
           </div>
@@ -215,7 +219,8 @@ export default function Login() {
         <button
           onClick={tryDemo}
           disabled={demoLoading}
-          className="inline-flex items-center gap-2.5 bg-accent hover:bg-[#4a5ae8] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold px-8 py-3.5 rounded-xl text-base transition-all shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:-translate-y-0.5"
+          className="inline-flex items-center gap-2.5 text-white font-semibold px-9 py-3.5 rounded-[14px] text-base transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5"
+          style={{background:'linear-gradient(135deg,#5b6cff,#4a5ae8)',boxShadow:'0 4px 24px rgba(91,108,255,.35),0 0 0 1px rgba(255,255,255,.08) inset'}}
         >
           {demoLoading ? 'Starting…' : 'Try NexusAI'}
           {!demoLoading && <ArrowRight size={18} />}
@@ -227,7 +232,7 @@ export default function Login() {
           onClick={() => setShowSignIn(true)}
           className="block mx-auto mt-9 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
         >
-          Have an account? Sign in
+          Have an account? Sign in →
         </button>
       </div>
     </div>

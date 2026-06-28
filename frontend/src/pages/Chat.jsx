@@ -200,12 +200,12 @@ function EmptyState({ onSelect }) {
   return (
     <div className="flex flex-col items-center justify-center h-full px-6 py-12">
       <div className="text-center mb-10">
-        <div className="w-12 h-12 rounded-2xl bg-accent/15 flex items-center justify-center mb-4 mx-auto">
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5 mx-auto" style={{background:'rgba(91,108,255,.12)',boxShadow:'0 0 0 1px rgba(91,108,255,.15),0 4px 24px rgba(91,108,255,.12)'}}>
           <Sparkles size={22} className="text-accent" />
         </div>
-        <h2 className="text-[#e8eaf0] text-xl font-semibold mb-1.5">Ask NexusAI anything</h2>
+        <h2 className="text-[#e8eaf0] text-xl font-semibold tracking-tight mb-2">Ask NexusAI anything</h2>
         <p className="text-zinc-500 text-sm max-w-xs mx-auto leading-relaxed">
-          Instant answers from your Notion, Slack, and Google Drive - every response is cited.
+          Instant answers from your Notion, Slack, and Google Drive — every response is cited.
         </p>
       </div>
 
@@ -214,9 +214,9 @@ function EmptyState({ onSelect }) {
           <button
             key={q}
             onClick={() => onSelect(q)}
-            className="group text-left bg-panel border border-rim rounded-xl p-3.5 hover:border-accent/40 transition-all"
+            className="group text-left bg-panel border border-rim rounded-[12px] p-3.5 hover:border-accent/35 hover:bg-lift transition-all"
           >
-            <span className="block text-[10px] font-semibold text-accent/60 mb-1 uppercase tracking-wider">
+            <span className="block text-[10px] font-semibold mb-1.5 uppercase tracking-widest" style={{color:'rgba(91,108,255,.65)'}}>
               {cat}
             </span>
             <span className="text-sm text-zinc-400 group-hover:text-zinc-200 transition-colors leading-snug">
@@ -232,10 +232,10 @@ function EmptyState({ onSelect }) {
 function TypingIndicator() {
   return (
     <div className="flex items-start gap-3">
-      <div className="w-7 h-7 rounded-full bg-accent/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{background:'rgba(91,108,255,.15)',border:'1px solid rgba(91,108,255,.2)'}}>
         <Sparkles size={13} className="text-accent" />
       </div>
-      <div className="bg-panel border border-rim rounded-2xl rounded-tl-sm px-4 py-3.5 flex items-center gap-1">
+      <div className="bg-panel border border-rim rounded-[18px] rounded-tl-[4px] px-4 py-3.5 flex items-center gap-1">
         {[0, 1, 2].map((i) => (
           <div
             key={i}

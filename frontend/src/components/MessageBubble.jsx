@@ -128,7 +128,7 @@ export default function MessageBubble({ message, onRetry }) {
     return (
       <div className="flex justify-end group">
         <div className="flex flex-col items-end gap-1 max-w-[72%]">
-          <div className="bg-accent/15 border border-accent/25 rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm text-[#e8eaf0] leading-relaxed">
+          <div className="bg-accent/[.13] border border-accent/[.22] rounded-[18px] rounded-tr-[4px] px-4 py-2.5 text-sm text-[#e8eaf0] leading-relaxed">
             {message.content}
           </div>
           {message.timestamp && (
@@ -151,13 +151,13 @@ export default function MessageBubble({ message, onRetry }) {
   return (
     <div className="flex items-start gap-3 group">
       {/* Avatar */}
-      <div className="w-7 h-7 rounded-full bg-accent/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{background:'rgba(91,108,255,.15)',border:'1px solid rgba(91,108,255,.2)'}}>
         <Sparkles size={13} className="text-accent" />
       </div>
 
       <div className="flex-1 min-w-0 space-y-2">
         {/* Bubble */}
-        <div className={`relative border rounded-2xl rounded-tl-sm px-4 py-3.5 text-sm text-[#e8eaf0] ${bubbleClass}`}>
+        <div className={`relative border rounded-[18px] rounded-tl-[4px] px-4 py-3.5 text-sm text-[#e8eaf0] ${bubbleClass}`}>
           {/* Clarification label */}
           {message.needs_clarification && (
             <div className="flex items-center gap-1.5 text-amber-400 text-xs font-medium mb-2.5">

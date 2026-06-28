@@ -33,7 +33,7 @@ export default function ChatInput({ onSend, disabled }) {
   };
 
   return (
-    <div className="flex items-end gap-3 bg-panel border border-rim rounded-xl px-4 py-3 focus-within:border-accent/50 transition-colors">
+    <div className="flex items-end gap-3 bg-panel border border-rim rounded-[14px] px-4 py-3 focus-within:border-accent/50 transition-colors">
       <textarea
         ref={textareaRef}
         rows={1}
@@ -48,9 +48,10 @@ export default function ChatInput({ onSend, disabled }) {
         onClick={submit}
         disabled={disabled}
         title="Send (Enter)"
-        className="p-1.5 rounded-lg bg-accent hover:bg-[#4a5ae8] disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors flex-shrink-0"
+        className="w-[30px] h-[30px] rounded-[8px] disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all flex-shrink-0 flex items-center justify-center hover:-translate-y-0.5"
+        style={{background:'linear-gradient(135deg,#5b6cff,#4a5ae8)',boxShadow:'0 2px 8px rgba(91,108,255,.3)'}}
       >
-        <ArrowUp size={15} />
+        <ArrowUp size={14} />
       </button>
     </div>
   );
